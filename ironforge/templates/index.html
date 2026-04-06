@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ironforge — Workout Program Designer</title>
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --card: #1a1a1a;
+    --border: #2a2a2a;
+    --accent: #e8a832;
+    --accent-dim: #b8842a;
+    --text: #e0e0e0;
+    --text-dim: #888;
+    --green: #4caf50;
+    --radius: 12px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0 0 4rem 0;
+  }
+  .header {
+    background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
+    border-bottom: 2px solid var(--accent);
+    padding: 1.5rem 1rem;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header h1 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+  }
+  .header p { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.25rem; }
+  .container { max-width: 600px; margin: 0 auto; padding: 1rem; }
+
+  .progress-bar { display: flex; gap: 4px; margin: 1rem 0 0.5rem; }
+  .progress-bar .step {
+    flex: 1; height: 4px; background: var(--border);
+    border-radius: 2px; transition: background 0.3s;
+  }
+  .progress-bar .step.active { background: var(--accent); }
+  .progress-label {
+    font-size: 0.75rem; color: var(--text-dim);
+    text-align: center; margin-bottom: 1rem;
+  }
+
+  .section { display: none; animation: fadeIn 0.3s ease; }
+  .section.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .section-title {
+    font-size: 1.1rem; font-weight: 600; color: var(--accent);
+    margin-bottom: 1rem; padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .question {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1rem; margin-bottom: 1rem;
+  }
+  .question label.q-label {
+    display: block; font-size: 0.9rem; font-weight: 500;
+    margin-bottom: 0.75rem; line-height: 1.4;
+  }
+  .question .hint {
+    font-size: 0.75rem; color: var(--text-dim);
+    margin-top: -0.5rem; margin-bottom: 0.75rem; font-style: italic;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 0.5rem; }
+  .option-btn {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.75rem 1rem; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 8px;
+    cursor: pointer; transition: all 0.15s;
+    font-size: 0.85rem; color: var(--text);
+  }
+  .option-btn:active { transform: scale(0.98); }
+  .option-btn input[type="radio"] { display: none; }
+  .option-btn .radio-dot {
+    width: 18px; height: 18px; border: 2px solid var(--text-dim);
+    border-radius: 50%; flex-shrink: 0; position: relative;
+  }
+  .option-btn input[type="radio"]:checked ~ .radio-dot { border-color: var(--accent); }
+  .option-btn input[type="radio"]:checked ~ .radio-dot::after {
+    content: ''; position: absolute; top: 3px; left: 3px;
+    width: 8px; height: 8px; background: var(--accent); border-radius: 50%;
+  }
+  .option-btn:has(input[type="radio"]:checked) {
+    border-color: var(--accent); background: rgba(232, 168, 50, 0.08);
+  }
+
+  .options-row { flex-direction: row; flex-wrap: wrap; }
+  .options-row .option-btn { flex: 1; min-width: 60px; justify-content: center; text-align: center; }
+  .options-row .option-btn .radio-dot { display: none; }
+  .options-row .option-btn:has(input[type="radio"]:checked) { color: var(--accent); font-weight: 600; }
+
+  /* Checkboxes for priority muscles */
+  .checkbox-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+  }
+  .check-btn {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.6rem 0.75rem; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 8px;
+    cursor: pointer; transition: all 0.15s;
+    font-size: 0.8rem; color: var(--text);
+  }
+  .check-btn:active { transform: scale(0.98); }
+  .check-btn input[type="checkbox"] { display: none; }
+  .check-btn .check-box {
+    width: 16px; height: 16px; border: 2px solid var(--text-dim);
+    border-radius: 4px; flex-shrink: 0; position: relative;
+    transition: all 0.15s;
+  }
+  .check-btn input:checked ~ .check-box {
+    border-color: var(--accent); background: var(--accent);
+  }
+  .check-btn input:checked ~ .check-box::after {
+    content: '✓'; position: absolute; top: -2px; left: 1px;
+    font-size: 12px; color: #000; font-weight: 700;
+  }
+  .check-btn:has(input:checked) {
+    border-color: var(--accent); background: rgba(232, 168, 50, 0.08);
+  }
+
+  /* Split selector cards */
+  .split-options { display: flex; flex-direction: column; gap: 0.5rem; }
+  .split-card {
+    padding: 0.75rem 1rem; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 8px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .split-card:active { transform: scale(0.98); }
+  .split-card input { display: none; }
+  .split-card .split-name { font-weight: 600; font-size: 0.85rem; margin-bottom: 0.25rem; }
+  .split-card .split-desc { font-size: 0.72rem; color: var(--text-dim); line-height: 1.4; }
+  .split-card:has(input:checked) {
+    border-color: var(--accent); background: rgba(232, 168, 50, 0.08);
+  }
+  .split-card:has(input:checked) .split-name { color: var(--accent); }
+
+  input[type="text"], input[type="number"], textarea {
+    width: 100%; padding: 0.75rem; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); font-size: 0.85rem; font-family: inherit;
+    outline: none; transition: border-color 0.2s;
+  }
+  input:focus, textarea:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 60px; }
+
+  .btn-row { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
+  .btn {
+    flex: 1; padding: 0.9rem; border: none; border-radius: var(--radius);
+    font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.15s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-next { background: var(--accent); color: #000; }
+  .btn-next:hover { background: var(--accent-dim); }
+  .btn-back { background: var(--border); color: var(--text); flex: 0.4; }
+  .btn-submit {
+    background: var(--green); color: #fff;
+    width: 100%; padding: 1rem; font-size: 1.1rem;
+  }
+
+  .loading {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85); z-index: 200;
+    justify-content: center; align-items: center;
+    flex-direction: column; gap: 1rem;
+  }
+  .loading.active { display: flex; }
+  .spinner {
+    width: 48px; height: 48px; border: 3px solid var(--border);
+    border-top-color: var(--accent); border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading p { color: var(--text-dim); font-size: 0.9rem; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>IRONFORGE</h1>
+  <p>Evidence-Based Workout Program Designer</p>
+</div>
+
+<div class="container">
+  <div class="progress-bar" id="progress">
+    <div class="step active"></div>
+    <div class="step"></div>
+    <div class="step"></div>
+    <div class="step"></div>
+    <div class="step"></div>
+    <div class="step"></div>
+  </div>
+  <div class="progress-label" id="progress-label">Block A — Goals</div>
+
+  <form id="intake" action="/generate" method="POST">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+    <!-- ═══ BLOCK A: GOALS ═══ -->
+    <div class="section active" data-step="0" data-label="Block A — Goals">
+      <div class="section-title">Goals</div>
+
+      <div class="question">
+        <label class="q-label">What is your primary training goal?</label>
+        <div class="options">
+          <label class="option-btn">
+            <input type="radio" name="primary_goal" value="a" checked>
+            <span class="radio-dot"></span>
+            Maximum muscle growth (hypertrophy)
+          </label>
+          <label class="option-btn">
+            <input type="radio" name="primary_goal" value="b">
+            <span class="radio-dot"></span>
+            Maximum strength (1RM progression)
+          </label>
+          <label class="option-btn">
+            <input type="radio" name="primary_goal" value="c">
+            <span class="radio-dot"></span>
+            Both muscle and strength (hybrid)
+          </label>
+          <label class="option-btn">
+            <input type="radio" name="primary_goal" value="d">
+            <span class="radio-dot"></span>
+            Build muscle while losing fat (recomp)
+          </label>
+        </div>
+      </div>
+
+      <div class="question">
+        <label class="q-label">Priority muscle groups to bring up?</label>
+        <div class="hint">Select all that apply (or none)</div>
+        <div class="checkbox-grid">
+          <label class="check-btn">
+            <input type="checkbox" name="priority_muscles" value="CHEST">
+            <span class="check-box"></span>Chest
+          </label>
+          <label class="check-btn">
+            <input type="checkbox" name="priority_muscles" value="BACK">
+            <span class="check-box"></span>Back
+          </label>
+          <label class="check-btn">
+            <input type="checkbox" name="priority_muscles" value="SIDE_REAR_DELTS">
+            <span class="check-box"></span>Shoulders
+          </label>
+          <label class="check-btn">
+            <input type="checkbox" name="priority_muscles" value="BICEPS">
+            <span class="check-box"></span>Biceps
+          </label>
+          <label class="check-btn">
+            <input type="checkbox" name="priority_muscles" value="TRICEPS">
+            <span class="check-box"></span>Triceps
+          </label>
+          <label class="check-btn">
+            <input type="checkbox" name="priority_muscles" value="QUADS">
+            <span class="check-box"></span>Quads
+          </label>
+          <label class="check-btn">
+            <input type="checkbox" name="priority_muscles" value="HAMSTRINGS">
+            <span class="check-box"></span>Hamstrings
+          </label>
+          <label class="check-btn">
+            <input type="checkbox" name="priority_muscles" value="GLUTES">
+            <span class="check-box"></span>Glutes
+          </label>
+          <label class="check-btn">
+            <input type="checkbox" name="priority_muscles" value="CALVES">
+            <span class="check-box"></span>Calves
+          </label>
+          <label class="check-btn">
+            <input type="checkbox" name="priority_muscles" value="ABS">
+            <span class="check-box"></span>Abs
+          </label>
+        </div>
+      </div>
+
+      <div class="question">
+        <label class="q-label">Current caloric phase?</label>
+        <div class="options options-row">
+          <label class="option-btn">
+            <input type="radio" name="caloric_phase" value="surplus">
+            <span class="radio-dot"></span>Surplus
+          </label>
+          <label class="option-btn">
+            <input type="radio" name="caloric_phase" value="maintenance" checked>
+            <span class="radio-dot"></span>Maintenance
+          </label>
+          <label class="option-btn">
+            <input type="radio" name="caloric_phase" value="deficit">
+            <span class="radio-dot"></span>Deficit
+          </label>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn btn-next" onclick="nextStep()">Next</button>
+      </div>
+    </div>
+
+    <!-- ═══ BLOCK B: TRAINING HISTORY ═══ -->
+    <div class="section" data-step="1" data-label="Block B — Training History">
+      <div class="section-title">Training History</div>
+
+      <div class="question">
+        <label class="q-label">How long have you been training with progressive overload?</label>
+        <div class="options">
+          <label class="option-btn">
+            <input type="radio" name="training_months" value="a">
+            <span class="radio-dot"></span>Less than 6 months
+          </label>
+          <label class="option-btn">
+            <input type="radio" name="training_months" value="b" checked>
+            <span class="radio-dot"></span>6 months – 3 years
+          </label>
+          <label class="option-btn">
+            <input type="radio" name="training_months" value="c">
+            <span class="radio-dot"></span>3+ years
+          </label>
+        </div>
+      </div>
+
+      <div class="question">
+        <label class="q-label">Can you add weight to compounds every session?</label>
+        <div class="options">
+          <label class="option-btn">
+            <input type="radio" name="progression_rate" value="a">
+            <span class="radio-dot"></span>Yes — every session with good form
+          </label>
+          <label class="option-btn">
+            <input type="radio" name="progression_rate" value="b" checked>
+            <span class="radio-dot"></span>No, but every 1–2 weeks
+          </label>
+          <label class="option-btn">
+            <input type="radio" name="progression_rate" value="c">
+            <span class="radio-dot"></span>No — weight goes up over weeks to months
+          </label>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn btn-back" onclick="prevStep()">Back</button>
+        <button type="button" class="btn btn-next" onclick="nextStep()">Next</button>
+      </div>
+    </div>
+
+    <!-- ═══ BLOCK C: SCHEDULE ═══ -->
+    <div class="section" data-step="2" data-label="Block C — Schedule">
+      <div class="section-title">Schedule & Logistics</div>
+
+      <div class="question">
+        <label class="q-label">Training days per week?</label>
+        <div class="options options-row">
+          <label class="option-btn">
+            <input type="radio" name="days_per_week" value="3">
+            <span class="radio-dot"></span>3
+          </label>
+          <label class="option-btn">
+            <input type="radio" name="days_per_week" value="4" checked>
+            <span class="radio-dot"></span>4
+          </label>
+          <label class="option-btn">
+            <input type="radio" name="days_per_week" value="5">
+            <span class="radio-dot"></span>5
+          </label>
+          <label class="option-btn">
+            <input type="radio" name="days_per_week" value="6">
+            <span class="radio-dot"></span>6
+          </label>
+        </div>
+      </div>
+
+      <div class="question">
+        <label class="q-label">Session length?</label>
+        <div class="options">
+          <label class="option-btn">
+            <input type="radio" name="session_minutes" value="40">
+            <span class="radio-dot"></span>Under 45 min
+          </label>
+          <label class="option-btn">
+            <input type="radio" name="session_minutes" value="52">
+            <span class="radio-dot"></span>45–60 min
+          </label>
+          <label class="option-btn">
+            <input type="radio" name="session_minutes" value="67" checked>
+            <span class="radio-dot"></span>60–75 min
+          </label>
+          <label class="option-btn">
+            <input type="radio" name="session_minutes" value="82">
+            <span class="radio-dot"></span>75–90 min
+          </label>
+          <label class="option-btn">
+            <input type="radio" name="session_minutes" value="95">
+            <span class="radio-dot"></span>90+ min
+          </label>
+        </div>
+      </div>
+
+      <div class="question">
+        <label class="q-label">Superset antagonist movements?</label>
+        <div class="hint">Saves ~36% session time with equal results</div>
+        <div class="options options-row">
+          <label class="option-btn">
+            <input type="radio" name="prefers_supersets" value="yes" checked>
+            <span class="radio-dot"></span>Yes
+          </label>
+          <label class="option-btn">
+            <input type="radio" name="prefers_supersets" value="no">
+            <span class="radio-dot"></span>No
+          </label>
+          <label class="option-btn">
+            <input type="radio" name="prefers_supersets" value="no_pref">
+            <span class="radio-dot"></span>No pref
+          </label>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn btn-back" onclick="prevStep()">Back</button>
+        <button type="button" class="btn btn-next" onclick="nextStep()">Next</button>
+      </div>
+    </div>
+
+    <!-- ═══ BLOCK C2: SPLIT SELECTION ═══ -->
+    <div class="section" data-step="3" data-label="Block C — Choose Your Split">
+      <div class="section-title">Choose Your Split</div>
+
+      <div class="question">
+        <label class="q-label">Pick a training split:</label>
+        <div class="hint">Options update based on your training days</div>
+        <div class="split-options" id="split-options">
+          <!-- Populated by JS based on days_per_week -->
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn btn-back" onclick="prevStep()">Back</button>
+        <button type="button" class="btn btn-next" onclick="nextStep()">Next</button>
+      </div>
+    </div>
+
+    <!-- ═══ BLOCK D: EQUIPMENT ═══ -->
+    <div class="section" data-step="4" data-label="Block D — Equipment">
+      <div class="section-title">Equipment Access</div>
+
+      <div class="question">
+        <label class="q-label">What do you have access to?</label>
+        <div class="options">
+          <label class="option-btn">
+            <input type="radio" name="equipment_access" value="a" checked>
+            <span class="radio-dot"></span>Full commercial gym
+          </label>
+          <label class="option-btn">
+            <input type="radio" name="equipment_access" value="b">
+            <span class="radio-dot"></span>Gym with limited machines/cables
+          </label>
+          <label class="option-btn">
+            <input type="radio" name="equipment_access" value="c">
+            <span class="radio-dot"></span>Home gym (dumbbells + barbell)
+          </label>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn btn-back" onclick="prevStep()">Back</button>
+        <button type="button" class="btn btn-next" onclick="nextStep()">Next</button>
+      </div>
+    </div>
+
+    <!-- ═══ BLOCK E: INDIVIDUAL ═══ -->
+    <div class="section" data-step="5" data-label="Block E — Individual Factors">
+      <div class="section-title">Individual Factors</div>
+
+      <div class="question">
+        <label class="q-label">Biological sex</label>
+        <div class="hint">Affects rep range bias — females skew higher reps</div>
+        <div class="options options-row">
+          <label class="option-btn">
+            <input type="radio" name="sex" value="male" checked>
+            <span class="radio-dot"></span>Male
+          </label>
+          <label class="option-btn">
+            <input type="radio" name="sex" value="female">
+            <span class="radio-dot"></span>Female
+          </label>
+        </div>
+      </div>
+
+      <div class="question">
+        <label class="q-label">Injuries or movement limitations?</label>
+        <input type="text" name="injuries" placeholder="none">
+      </div>
+
+      <div class="question">
+        <label class="q-label">Current hard sets per muscle per week?</label>
+        <div class="hint">Rough estimate — e.g. 10, 15, or 0 if new</div>
+        <input type="number" name="current_sets" value="0" min="0" max="40">
+      </div>
+
+      <div class="question">
+        <label class="q-label">Current program?</label>
+        <textarea name="current_program" placeholder="starting fresh" rows="2"></textarea>
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn btn-back" onclick="prevStep()">Back</button>
+        <button type="submit" class="btn btn-submit" id="submit-btn">Generate My Program</button>
+      </div>
+    </div>
+
+  </form>
+</div>
+
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+  <p>Building your 5-week mesocycle...</p>
+</div>
+
+<script>
+let currentStep = 0;
+const sections = document.querySelectorAll('.section');
+const steps = document.querySelectorAll('.progress-bar .step');
+const label = document.getElementById('progress-label');
+
+function showStep(n) {
+  sections.forEach(s => s.classList.remove('active'));
+  sections[n].classList.add('active');
+  steps.forEach((s, i) => s.classList.toggle('active', i <= n));
+  label.textContent = sections[n].dataset.label;
+  currentStep = n;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // When entering split selection step, load options
+  if (n === 3) loadSplitOptions();
+}
+
+function nextStep() {
+  if (currentStep < sections.length - 1) showStep(currentStep + 1);
+}
+
+function prevStep() {
+  if (currentStep > 0) showStep(currentStep - 1);
+}
+
+function getSelectedDays() {
+  const checked = document.querySelector('input[name="days_per_week"]:checked');
+  return checked ? checked.value : '4';
+}
+
+function loadSplitOptions() {
+  const days = getSelectedDays();
+  fetch(`/api/splits/${days}`)
+    .then(r => r.json())
+    .then(splits => {
+      const container = document.getElementById('split-options');
+      container.innerHTML = '';
+      splits.forEach((s, i) => {
+        const card = document.createElement('label');
+        card.className = 'split-card';
+        card.innerHTML = `
+          <input type="radio" name="split_key" value="${s.key}" ${i === 0 ? 'checked' : ''}>
+          <div class="split-name">${s.name}</div>
+          <div class="split-desc">${s.rationale}</div>
+        `;
+        container.appendChild(card);
+      });
+    });
+}
+
+document.getElementById('intake').addEventListener('submit', function() {
+  document.getElementById('loading').classList.add('active');
+});
+
+// Preload splits on page load
+loadSplitOptions();
+</script>
+
+</body>
+</html>
