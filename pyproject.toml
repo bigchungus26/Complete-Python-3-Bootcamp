@@ -1,8 +1,10 @@
 [project]
 name = "ironforge"
-version = "0.1.0"
+version = "0.2.0"
 description = "Evidence-based workout program designer"
 requires-python = ">=3.11"
+dependencies = ["flask>=3.0"]
 
 [project.scripts]
 ironforge = "ironforge.cli:main"
+ironforge-web = "ironforge.web:run"

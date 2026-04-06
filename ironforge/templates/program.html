@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Program — Ironforge</title>
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --card: #1a1a1a;
+    --border: #2a2a2a;
+    --accent: #e8a832;
+    --accent-dim: #b8842a;
+    --text: #e0e0e0;
+    --text-dim: #888;
+    --green: #4caf50;
+    --blue: #5b9bd5;
+    --red: #e06060;
+    --radius: 12px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 4rem;
+  }
+
+  .header {
+    background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
+    border-bottom: 2px solid var(--accent);
+    padding: 1.25rem 1rem;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header h1 { font-size: 1.2rem; color: var(--accent); letter-spacing: 0.05em; }
+  .header a {
+    display: inline-block;
+    margin-top: 0.4rem;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    text-decoration: none;
+    border: 1px solid var(--border);
+    padding: 0.25rem 0.75rem;
+    border-radius: 6px;
+  }
+
+  .container { max-width: 700px; margin: 0 auto; padding: 1rem; }
+
+  /* Sections */
+  .program-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 1rem;
+    overflow: hidden;
+  }
+  .program-section .sec-header {
+    background: rgba(232, 168, 50, 0.08);
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--accent);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+  }
+  .sec-header .chevron { transition: transform 0.2s; font-size: 0.8rem; }
+  .program-section.collapsed .sec-body { display: none; }
+  .program-section.collapsed .chevron { transform: rotate(-90deg); }
+  .sec-body { padding: 0.75rem 1rem; }
+
+  /* Level assessment */
+  .level-grid {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.4rem 1rem;
+    font-size: 0.85rem;
+  }
+  .level-grid .pattern { color: var(--text-dim); }
+  .level-grid .level { font-weight: 600; }
+  .level-grid .level.BEGINNER { color: var(--green); }
+  .level-grid .level.INTERMEDIATE { color: var(--blue); }
+  .level-grid .level.ADVANCED { color: var(--accent); }
+
+  /* Volume table */
+  .vol-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+  }
+  .vol-table th {
+    text-align: left;
+    color: var(--text-dim);
+    font-weight: 500;
+    padding: 0.4rem 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .vol-table td {
+    padding: 0.35rem 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .vol-table .num { text-align: center; font-variant-numeric: tabular-nums; }
+
+  /* Split */
+  .split-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+  .split-rationale { font-size: 0.8rem; color: var(--text-dim); line-height: 1.5; }
+
+  /* Session tabs */
+  .session-tabs {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+    -webkit-overflow-scrolling: touch;
+  }
+  .session-tab {
+    flex-shrink: 0;
+    padding: 0.5rem 0.75rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-dim);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .session-tab.active {
+    background: rgba(232, 168, 50, 0.12);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .session-content { display: none; }
+  .session-content.active { display: block; }
+
+  /* Exercise card */
+  .exercise {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+  .exercise .ex-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .exercise .ex-num {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    background: var(--card);
+    width: 22px; height: 22px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .exercise .ex-name {
+    font-weight: 600;
+    font-size: 0.85rem;
+    flex: 1;
+  }
+  .exercise .tier-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .tier-badge.t1 { background: rgba(232, 168, 50, 0.2); color: var(--accent); }
+  .tier-badge.t2 { background: rgba(91, 155, 213, 0.2); color: var(--blue); }
+  .tier-badge.t3 { background: rgba(76, 175, 80, 0.2); color: var(--green); }
+
+  .exercise .ex-params {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    margin-left: 30px;
+    font-size: 0.8rem;
+    flex-wrap: wrap;
+  }
+  .exercise .ex-params .param {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--text-dim);
+  }
+  .exercise .ex-params .param-val { color: var(--text); font-weight: 500; }
+
+  .exercise .superset-badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    padding: 1px 6px;
+    background: rgba(232, 168, 50, 0.12);
+    color: var(--accent-dim);
+    border-radius: 4px;
+    margin-left: 0.25rem;
+  }
+
+  .exercise .ex-notes {
+    margin-top: 0.4rem;
+    margin-left: 30px;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    line-height: 1.4;
+    font-style: italic;
+  }
+
+  /* Prose sections */
+  .prose {
+    font-size: 0.8rem;
+    line-height: 1.6;
+    white-space: pre-line;
+    color: var(--text);
+  }
+  .prose strong, .prose b { color: var(--accent); font-weight: 600; }
+
+  /* Mesocycle table */
+  .meso-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+  }
+  .meso-table th {
+    text-align: left;
+    color: var(--text-dim);
+    font-weight: 500;
+    padding: 0.4rem 0.4rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .meso-table td {
+    padding: 0.4rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .meso-table tr:last-child td {
+    color: var(--accent-dim);
+    font-style: italic;
+  }
+
+  /* Back to top */
+  .back-top {
+    display: block;
+    text-align: center;
+    margin-top: 2rem;
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>YOUR PROGRAM</h1>
+  <a href="/">Generate New Program</a>
+</div>
+
+<div class="container">
+
+  <!-- 1. LEVEL ASSESSMENT -->
+  <div class="program-section">
+    <div class="sec-header" onclick="toggleSection(this)">
+      1. Training Level Assessment
+      <span class="chevron">&#9660;</span>
+    </div>
+    <div class="sec-body">
+      <div class="level-grid">
+        {% for pattern, level in program.level_assessment.items() %}
+        <span class="pattern">{{ pattern.name | replace('_', ' ') | title }}</span>
+        <span class="level {{ level.name }}">{{ level.name | title }}</span>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. VOLUME TARGETS -->
+  <div class="program-section">
+    <div class="sec-header" onclick="toggleSection(this)">
+      2. Weekly Volume Targets
+      <span class="chevron">&#9660;</span>
+    </div>
+    <div class="sec-body">
+      <table class="vol-table">
+        <tr><th>Muscle</th><th class="num">MEV</th><th class="num">Week 1</th><th class="num">MRV</th></tr>
+        {% for vt in program.volume_targets %}
+        <tr>
+          <td>{{ vt.muscle.name | replace('_', ' ') | title }}</td>
+          <td class="num">{{ vt.mev | round(1) }}</td>
+          <td class="num" style="font-weight:600; color:var(--accent);">{{ vt.working }}</td>
+          <td class="num">{{ vt.mrv | int }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+
+  <!-- 3. SPLIT STRUCTURE -->
+  <div class="program-section">
+    <div class="sec-header" onclick="toggleSection(this)">
+      3. Split Structure
+      <span class="chevron">&#9660;</span>
+    </div>
+    <div class="sec-body">
+      <div class="split-name">{{ program.split_name }}</div>
+      <div class="split-rationale">{{ program.split_rationale }}</div>
+    </div>
+  </div>
+
+  <!-- 4. WEEKLY PROGRAM -->
+  <div class="program-section">
+    <div class="sec-header" onclick="toggleSection(this)">
+      4. Weekly Program — Week 1
+      <span class="chevron">&#9660;</span>
+    </div>
+    <div class="sec-body">
+      <div class="session-tabs">
+        {% for session in program.week1.sessions %}
+        <div class="session-tab {% if loop.first %}active{% endif %}"
+             onclick="switchSession(this, {{ loop.index0 }})">
+          {{ session.day_label | replace('Day ' ~ loop.index ~ ' — ', '') }}
+        </div>
+        {% endfor %}
+      </div>
+
+      {% for session in program.week1.sessions %}
+      <div class="session-content {% if loop.first %}active{% endif %}" data-session="{{ loop.index0 }}">
+        {% for ex in session.exercises %}
+        <div class="exercise">
+          <div class="ex-top">
+            <span class="ex-num">{{ loop.index }}</span>
+            <span class="ex-name">{{ ex.exercise.name }}</span>
+            <span class="tier-badge t{{ ex.tier.value }}">T{{ ex.tier.value }}</span>
+          </div>
+          <div class="ex-params">
+            <span class="param"><span class="param-val">{{ ex.load.sets }}&times;{{ ex.load.rep_low }}-{{ ex.load.rep_high }}</span></span>
+            <span class="param">RIR <span class="param-val">{{ ex.load.rir }}</span></span>
+            <span class="param">Rest <span class="param-val">{{ ex.load.rest_seconds }}s</span></span>
+            {% if ex.superset_pair_id %}
+            <span class="superset-badge">SS {{ ex.superset_pair_id }}</span>
+            {% endif %}
+          </div>
+          {% if ex.notes %}
+          <div class="ex-notes">{{ ex.notes }}</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- 5. PROGRESSION -->
+  <div class="program-section collapsed">
+    <div class="sec-header" onclick="toggleSection(this)">
+      5. Progression Instructions
+      <span class="chevron">&#9660;</span>
+    </div>
+    <div class="sec-body">
+      <div class="prose">{{ program.progression_instructions }}</div>
+    </div>
+  </div>
+
+  <!-- 6. DELOAD -->
+  <div class="program-section collapsed">
+    <div class="sec-header" onclick="toggleSection(this)">
+      6. Deload Instructions
+      <span class="chevron">&#9660;</span>
+    </div>
+    <div class="sec-body">
+      <div class="prose">{{ program.deload_instructions }}</div>
+    </div>
+  </div>
+
+  <!-- 7. MESOCYCLE -->
+  <div class="program-section">
+    <div class="sec-header" onclick="toggleSection(this)">
+      7. Mesocycle Progression
+      <span class="chevron">&#9660;</span>
+    </div>
+    <div class="sec-body">
+      <table class="meso-table">
+        <tr><th>Wk</th><th>Volume</th><th>RIR</th><th>Load</th></tr>
+        {% for mo in program.mesocycle_overview %}
+        <tr>
+          <td style="font-weight:600;">{{ mo.week }}</td>
+          <td>{{ mo.volume_description }}</td>
+          <td>{{ mo.rir }}</td>
+          <td>{{ mo.load_note }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+
+  <a href="/" class="back-top">Generate Another Program</a>
+</div>
+
+<script>
+function toggleSection(header) {
+  header.parentElement.classList.toggle('collapsed');
+}
+
+function switchSession(tab, idx) {
+  document.querySelectorAll('.session-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.session-content').forEach(c => c.classList.remove('active'));
+  tab.classList.add('active');
+  document.querySelector(`.session-content[data-session="${idx}"]`).classList.add('active');
+}
+</script>
+
+</body>
+</html>
