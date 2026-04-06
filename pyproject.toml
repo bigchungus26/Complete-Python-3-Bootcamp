@@ -1,0 +1,8 @@
+[project]
+name = "ironforge"
+version = "0.1.0"
+description = "Evidence-based workout program designer"
+requires-python = ">=3.11"
+
+[project.scripts]
+ironforge = "ironforge.cli:main"
