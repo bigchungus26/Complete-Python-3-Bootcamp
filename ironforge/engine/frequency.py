@@ -107,21 +107,27 @@ def _push_pull_legs_3() -> SplitPlan:
         ],
     )
 
-def _upper_lower_full_3() -> SplitPlan:
-    # Upper → Full → Lower: no overlap if Full is between them
-    # BUT Full overlaps with both Upper and Lower.
-    # Fix: reorder to Upper → Lower → Full with rest days required
+def _upper_lower_upper_3() -> SplitPlan:
     return SplitPlan(
-        key="ulf_3", name="Upper / Lower / Full",
-        requires_rest_days=True,
-        rationale="Upper-Lower-Full gives priority muscles an extra hit. "
-                  "Requires rest days between sessions (e.g. Mon/Wed/Fri).",
+        key="ulu_3", name="Upper / Lower / Upper",
+        rationale="Upper-focused 3-day split. Upper body hit 2x/week, lower 1x. "
+                  "No consecutive muscle overlap.",
         sessions=[
-            SessionTemplate("Day 1 — Upper", UPPER),
+            SessionTemplate("Day 1 — Upper A", UPPER),
             SessionTemplate("Day 2 — Lower", LOWER),
-            SessionTemplate("Day 3 — Full Body",
-                            UPPER + [VolumeMuscle.QUADS, VolumeMuscle.HAMSTRINGS,
-                                     VolumeMuscle.GLUTES, VolumeMuscle.CALVES, VolumeMuscle.ABS]),
+            SessionTemplate("Day 3 — Upper B", UPPER),
+        ],
+    )
+
+def _lower_upper_lower_3() -> SplitPlan:
+    return SplitPlan(
+        key="lul_3", name="Lower / Upper / Lower",
+        rationale="Lower-focused 3-day split. Lower body hit 2x/week, upper 1x. "
+                  "No consecutive muscle overlap.",
+        sessions=[
+            SessionTemplate("Day 1 — Lower A", LOWER),
+            SessionTemplate("Day 2 — Upper", UPPER),
+            SessionTemplate("Day 3 — Lower B", LOWER),
         ],
     )
 
@@ -446,7 +452,7 @@ def _torso_limbs_6() -> SplitPlan:
 # ═══════════════════════════════════════════════════════════════════════
 
 SPLITS_BY_DAYS: dict[int, list[SplitPlan]] = {
-    3: [_full_body_3(), _push_pull_legs_3(), _upper_lower_full_3()],
+    3: [_full_body_3(), _push_pull_legs_3(), _upper_lower_upper_3(), _lower_upper_lower_3()],
     4: [_upper_lower_4(), _push_pull_4(), _full_body_4(), _upper_lower_push_pull_4(),
         _post_ant_4(), _upper_post_lower_ant_4(), _torso_limbs_4()],
     5: [_ul_ppl_5(), _ppl_ul_5(), _upper_lower_push_lower_pull_5(),
