@@ -47,6 +47,8 @@ from ironforge.data.exercises import (
     SEATED_HAM_CURL, LYING_HAM_CURL, RDL, SLDL,
     # Glutes
     HIP_THRUST, SMITH_HIP_THRUST, GLUTE_KICKBACK, KICKBACK_MACHINE,
+    STEP_UP, BULGARIAN_SPLIT_SQUAT_GLUTE, REVERSE_LUNGE,
+    SMITH_SQUAT_FEET_FORWARD, GLUTE_ABDUCTOR, GLUTE_ADDUCTOR,
     # Calves
     CALF_EXTENSION, DONKEY_CALF_RAISE,
     # Additional
@@ -197,12 +199,20 @@ def select_exercises_for_session(
     # ─── GLUTES ──────────────────────────────────────────────────────
     if VolumeMuscle.GLUTES in template.muscle_focus:
         if profile.wants_glute_focus:
+            # Primary hip hinge glute builder
             _add(_pick([HIP_THRUST, SMITH_HIP_THRUST], equip, used_names), 3,
                  "Primary glute builder")
-            _add(_pick([BULGARIAN_SPLIT_SQUAT, GLUTE_KICKBACK, KICKBACK_MACHINE],
+            # Unilateral / squat-pattern glute work
+            _add(_pick([BULGARIAN_SPLIT_SQUAT_GLUTE, STEP_UP, REVERSE_LUNGE,
+                        SMITH_SQUAT_FEET_FORWARD, BULGARIAN_SPLIT_SQUAT],
+                       equip, used_names), 2)
+            # Isolation / glute med accessory
+            _add(_pick([GLUTE_ABDUCTOR, GLUTE_KICKBACK, KICKBACK_MACHINE,
+                        GLUTE_ADDUCTOR],
                        equip, used_names), 2)
         else:
-            _add(_pick([HIP_THRUST, SMITH_HIP_THRUST, GLUTE_KICKBACK],
+            _add(_pick([HIP_THRUST, SMITH_HIP_THRUST, STEP_UP, REVERSE_LUNGE,
+                        GLUTE_KICKBACK],
                        equip, used_names), 2)
 
     # ─── CALVES ──────────────────────────────────────────────────────

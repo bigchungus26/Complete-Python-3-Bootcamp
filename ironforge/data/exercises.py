@@ -623,6 +623,48 @@ KICKBACK_MACHINE = _ex(
     equipment=(Equipment.MACHINE,),
     tags=("glute", "isolation"),
 )
+STEP_UP = _ex(
+    "Step Up", MuscleGroup.GLUTES,
+    secondary=((MuscleGroup.QUADS, 0.5),),
+    pattern=MovementPattern.SQUAT, tier=Tier.T2,
+    equipment=(Equipment.DUMBBELL,), bilateral=False,
+    tags=("glute", "unilateral", "step"),
+)
+BULGARIAN_SPLIT_SQUAT_GLUTE = _ex(
+    "Bulgarian Split Squat (Glute Focus)", MuscleGroup.GLUTES,
+    secondary=((MuscleGroup.QUADS, 0.5),),
+    pattern=MovementPattern.SQUAT, tier=Tier.T2,
+    equipment=(Equipment.DUMBBELL,), bilateral=False,
+    tags=("glute", "unilateral", "split_squat"),
+    notes="Torso leaned forward for glute bias",
+)
+REVERSE_LUNGE = _ex(
+    "Reverse Lunge", MuscleGroup.GLUTES,
+    secondary=((MuscleGroup.QUADS, 0.5),),
+    pattern=MovementPattern.SQUAT, tier=Tier.T2,
+    equipment=(Equipment.DUMBBELL,), bilateral=False,
+    tags=("glute", "unilateral", "lunge"),
+)
+SMITH_SQUAT_FEET_FORWARD = _ex(
+    "Smith Squat Feet Forward", MuscleGroup.GLUTES,
+    secondary=((MuscleGroup.HAMSTRINGS, 0.5),),
+    pattern=MovementPattern.SQUAT, tier=Tier.T2,
+    equipment=(Equipment.SMITH_MACHINE,),
+    tags=("glute", "squat"),
+    notes="Feet well forward of bar path; hip-dominant pattern",
+)
+GLUTE_ABDUCTOR = _ex(
+    "Abductor Machine (Glute Med)", MuscleGroup.GLUTES,
+    equipment=(Equipment.MACHINE,),
+    tags=("glute", "glute_med", "isolation"),
+    notes="Glute medius focus; lean torso slightly forward",
+)
+GLUTE_ADDUCTOR = _ex(
+    "Adductor Machine (Glute Accessory)", MuscleGroup.GLUTES,
+    equipment=(Equipment.MACHINE,),
+    tags=("glute", "adductor", "isolation"),
+    notes="Glute-adductor accessory; paired with abductor work",
+)
 
 # ─── CALVES ──────────────────────────────────────────────────────────────────
 
@@ -709,6 +751,8 @@ ALL_EXERCISES: list[ExerciseDefinition] = [
     RDL, SLDL, LYING_HAM_CURL, SEATED_HAM_CURL, ROUNDED_BACK_HYPER,
     # Legs — Glutes
     HIP_THRUST, SMITH_HIP_THRUST, GLUTE_KICKBACK, KICKBACK_MACHINE,
+    STEP_UP, BULGARIAN_SPLIT_SQUAT_GLUTE, REVERSE_LUNGE,
+    SMITH_SQUAT_FEET_FORWARD, GLUTE_ABDUCTOR, GLUTE_ADDUCTOR,
     # Calves
     CALF_EXTENSION, DONKEY_CALF_RAISE,
     # Additional
