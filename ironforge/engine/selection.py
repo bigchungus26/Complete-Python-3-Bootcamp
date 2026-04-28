@@ -53,6 +53,9 @@ from ironforge.data.exercises import (
     CALF_EXTENSION, DONKEY_CALF_RAISE,
     # Additional
     AB_CURL_MACHINE, ADDUCTOR_MACHINE,
+    # Extra equipment
+    PULL_UP, CHIN_UP, TRAP_BAR_DEADLIFT, KETTLEBELL_SWING, GOBLET_SQUAT,
+    DIP, BAND_LATERAL_RAISE, BAND_PULL_APART, DB_BENCH_ADJUSTABLE,
 )
 from ironforge.engine.frequency import SessionTemplate
 from ironforge.engine.load import assign_loading
@@ -163,11 +166,11 @@ def select_exercises_for_session(
     if VolumeMuscle.CHEST in template.muscle_focus:
         if is_a:
             press_opts = [INCLINE_BENCH, INCLINE_SMITH_BENCH, INCLINE_DB_PRESS,
-                          INCLINE_MACHINE_PRESS]
+                          INCLINE_MACHINE_PRESS, DB_BENCH_ADJUSTABLE]
             fly_opts = [UPPER_CHEST_PEC_DECK, UPPER_CHEST_CABLE_FLY]
         else:
             press_opts = [FLAT_BENCH, SMITH_CHEST_PRESS, FLAT_DB_PRESS,
-                          CHEST_PRESS_MACHINE]
+                          CHEST_PRESS_MACHINE, DIP, DB_BENCH_ADJUSTABLE]
             fly_opts = [PEC_DECK, MID_CHEST_CABLE_FLY, LOW_CHEST_CABLE_FLY]
 
         _add(_pick(press_opts, equip, used_names), 3)
@@ -176,10 +179,10 @@ def select_exercises_for_session(
     # ─── BACK ────────────────────────────────────────────────────────
     if VolumeMuscle.BACK in template.muscle_focus:
         if is_a:
-            vpull_opts = [LAT_PULLDOWN_WIDE, LAT_PULLDOWN_MACHINE, LAT_PULLDOWN_NEUTRAL]
+            vpull_opts = [PULL_UP, LAT_PULLDOWN_WIDE, LAT_PULLDOWN_MACHINE, LAT_PULLDOWN_NEUTRAL]
             row_opts = [SEATED_CHEST_SUPPORTED_ROW, CHEST_SUPPORTED_ELBOWS_TUCKED, ROW_MACHINE]
         else:
-            vpull_opts = [LAT_PULLDOWN_NEUTRAL, LAT_PULLDOWN_CLOSE, LAT_PULLDOWN_MACHINE]
+            vpull_opts = [CHIN_UP, LAT_PULLDOWN_NEUTRAL, LAT_PULLDOWN_CLOSE, LAT_PULLDOWN_MACHINE]
             row_opts = [DB_ROW_TO_HIP, CHEST_SUPPORTED_ELBOWS_FLARED, TBAR_ROW, BARBELL_ROW]
 
         stretch_opts = [EZ_BAR_CABLE_PULLOVER, SINGLE_ARM_CABLE_PULLOVER, FLAT_PULLOVER_MACHINE]
@@ -193,8 +196,9 @@ def select_exercises_for_session(
 
     # ─── SIDE/REAR DELTS ─────────────────────────────────────────────
     if VolumeMuscle.SIDE_REAR_DELTS in template.muscle_focus:
-        side_opts = [LATERAL_RAISE_CABLE, LATERAL_RAISE, LATERAL_RAISE_MACHINE]
-        rear_opts = [REAR_DELT_FLY_SUPPORTED, REAR_DELT_FLY]
+        side_opts = [LATERAL_RAISE_CABLE, LATERAL_RAISE, LATERAL_RAISE_MACHINE,
+                     BAND_LATERAL_RAISE]
+        rear_opts = [REAR_DELT_FLY_SUPPORTED, REAR_DELT_FLY, BAND_PULL_APART]
 
         _add(_pick(side_opts, equip, used_names), 3,
              "Neutral grip (thumbs forward); slight scaption 15-30°")
@@ -230,9 +234,11 @@ def select_exercises_for_session(
     # ─── QUADS ───────────────────────────────────────────────────────
     if VolumeMuscle.QUADS in template.muscle_focus:
         if is_a:
-            squat_opts = [BARBELL_SQUAT, SMITH_SQUAT, HACK_SQUAT_MACHINE, BELT_SQUAT]
+            squat_opts = [BARBELL_SQUAT, SMITH_SQUAT, HACK_SQUAT_MACHINE,
+                          BELT_SQUAT, GOBLET_SQUAT]
         else:
-            squat_opts = [HACK_SQUAT_MACHINE, LEG_PRESS, LEG_PRESS_LOWERED, SMITH_SQUAT]
+            squat_opts = [HACK_SQUAT_MACHINE, LEG_PRESS, LEG_PRESS_LOWERED,
+                          SMITH_SQUAT, GOBLET_SQUAT]
 
         _add(_pick(squat_opts, equip, used_names), 3,
              "Full depth; track knee over second toe")
@@ -243,7 +249,7 @@ def select_exercises_for_session(
     if VolumeMuscle.HAMSTRINGS in template.muscle_focus:
         _add(_pick([SEATED_HAM_CURL, LYING_HAM_CURL], equip, used_names), 3,
              "Primary hamstring exercise; 70-90% of curl volume")
-        _add(_pick([RDL, SLDL], equip, used_names), 2,
+        _add(_pick([RDL, SLDL, TRAP_BAR_DEADLIFT], equip, used_names), 2,
              "Mandatory hip extension component")
 
     # ─── GLUTES ──────────────────────────────────────────────────────
@@ -261,8 +267,8 @@ def select_exercises_for_session(
                         GLUTE_ADDUCTOR],
                        equip, used_names), 2)
         else:
-            _add(_pick([HIP_THRUST, SMITH_HIP_THRUST, STEP_UP, REVERSE_LUNGE,
-                        GLUTE_KICKBACK],
+            _add(_pick([HIP_THRUST, SMITH_HIP_THRUST, KETTLEBELL_SWING,
+                        STEP_UP, REVERSE_LUNGE, GLUTE_KICKBACK],
                        equip, used_names), 2)
 
     # ─── CALVES ──────────────────────────────────────────────────────

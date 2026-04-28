@@ -30,7 +30,9 @@ class UserProfile:
     available_equipment: set[Equipment] = field(default_factory=lambda: {
         Equipment.BARBELL, Equipment.DUMBBELL, Equipment.CABLE,
         Equipment.MACHINE, Equipment.SMITH_MACHINE, Equipment.EZ_BAR,
-        Equipment.BODYWEIGHT,
+        Equipment.BODYWEIGHT, Equipment.PULL_UP_BAR, Equipment.TRAP_BAR,
+        Equipment.KETTLEBELL, Equipment.RESISTANCE_BANDS,
+        Equipment.DIP_STATION, Equipment.ADJUSTABLE_BENCH,
     })
 
     # Individual

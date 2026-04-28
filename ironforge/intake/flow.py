@@ -13,10 +13,16 @@ EQUIPMENT_OPTIONS: list[tuple[str, Equipment, str]] = [
     ("a", Equipment.BARBELL, "Barbell"),
     ("b", Equipment.DUMBBELL, "Dumbbells"),
     ("c", Equipment.EZ_BAR, "EZ Bar"),
-    ("d", Equipment.CABLE, "Cables"),
-    ("e", Equipment.MACHINE, "Machines"),
-    ("f", Equipment.SMITH_MACHINE, "Smith Machine"),
-    ("g", Equipment.BODYWEIGHT, "Bodyweight"),
+    ("d", Equipment.TRAP_BAR, "Trap / Hex Bar"),
+    ("e", Equipment.KETTLEBELL, "Kettlebells"),
+    ("f", Equipment.CABLE, "Cables"),
+    ("g", Equipment.MACHINE, "Machines"),
+    ("h", Equipment.SMITH_MACHINE, "Smith Machine"),
+    ("i", Equipment.PULL_UP_BAR, "Pull-up Bar"),
+    ("j", Equipment.DIP_STATION, "Dip Station"),
+    ("k", Equipment.ADJUSTABLE_BENCH, "Adjustable Bench"),
+    ("l", Equipment.RESISTANCE_BANDS, "Resistance Bands"),
+    ("m", Equipment.BODYWEIGHT, "Bodyweight only"),
 ]
 
 # Injury option-letter → key (matches questions.INJURY_OPTIONS order).

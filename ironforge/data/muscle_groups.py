@@ -85,6 +85,12 @@ class Equipment(Enum):
     SMITH_MACHINE = auto()
     BODYWEIGHT = auto()
     EZ_BAR = auto()
+    PULL_UP_BAR = auto()
+    TRAP_BAR = auto()
+    KETTLEBELL = auto()
+    RESISTANCE_BANDS = auto()
+    DIP_STATION = auto()
+    ADJUSTABLE_BENCH = auto()
 
 
 class Tier(Enum):

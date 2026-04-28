@@ -704,6 +704,71 @@ FOREARM_WRIST_CURL = _ex(
     tags=("forearm",),
 )
 
+# ─── EXTRA EQUIPMENT EXERCISES ────────────────────────────────────────────────
+
+PULL_UP = _ex(
+    "Pull-Up", MuscleGroup.LATS,
+    secondary=((MuscleGroup.BICEPS, 0.5), (MuscleGroup.MID_BACK, 0.4)),
+    pattern=MovementPattern.VERTICAL_PULL, tier=Tier.T1,
+    equipment=(Equipment.PULL_UP_BAR,),
+    tags=("vertical_pull", "bodyweight"),
+)
+CHIN_UP = _ex(
+    "Chin-Up", MuscleGroup.LATS,
+    secondary=((MuscleGroup.BICEPS, 0.6),),
+    pattern=MovementPattern.VERTICAL_PULL, tier=Tier.T1,
+    equipment=(Equipment.PULL_UP_BAR,),
+    tags=("vertical_pull", "bodyweight", "biceps_assist"),
+)
+TRAP_BAR_DEADLIFT = _ex(
+    "Trap Bar Deadlift", MuscleGroup.HAMSTRINGS,
+    secondary=((MuscleGroup.GLUTES, 0.6), (MuscleGroup.QUADS, 0.4),
+               (MuscleGroup.SPINAL_ERECTORS, 0.5)),
+    pattern=MovementPattern.HIP_HINGE, tier=Tier.T1,
+    equipment=(Equipment.TRAP_BAR,),
+    tags=("hip_hinge", "compound"),
+)
+KETTLEBELL_SWING = _ex(
+    "Kettlebell Swing", MuscleGroup.GLUTES,
+    secondary=((MuscleGroup.HAMSTRINGS, 0.5),),
+    pattern=MovementPattern.HIP_HINGE, tier=Tier.T2,
+    equipment=(Equipment.KETTLEBELL,),
+    tags=("hip_hinge", "ballistic"),
+)
+GOBLET_SQUAT = _ex(
+    "Goblet Squat", MuscleGroup.QUADS,
+    secondary=((MuscleGroup.GLUTES, 0.4),),
+    pattern=MovementPattern.SQUAT, tier=Tier.T2,
+    equipment=(Equipment.KETTLEBELL, Equipment.DUMBBELL),
+    tags=("squat",),
+)
+DIP = _ex(
+    "Dip", MuscleGroup.CHEST_STERNAL,
+    secondary=((MuscleGroup.TRICEPS_LATERAL, 0.6), (MuscleGroup.FRONT_DELT, 0.4)),
+    pattern=MovementPattern.HORIZONTAL_PUSH, tier=Tier.T1,
+    equipment=(Equipment.DIP_STATION,),
+    tags=("flat_chest", "press", "bodyweight"),
+)
+BAND_LATERAL_RAISE = _ex(
+    "Band Lateral Raise", MuscleGroup.SIDE_DELT,
+    pattern=MovementPattern.ISOLATION, tier=Tier.T3,
+    equipment=(Equipment.RESISTANCE_BANDS,),
+    tags=("side_delt",),
+)
+BAND_PULL_APART = _ex(
+    "Band Pull-Apart", MuscleGroup.REAR_DELT,
+    pattern=MovementPattern.ISOLATION, tier=Tier.T3,
+    equipment=(Equipment.RESISTANCE_BANDS,),
+    tags=("rear_delt", "health_accessory"),
+)
+DB_BENCH_ADJUSTABLE = _ex(
+    "Adjustable Bench DB Press", MuscleGroup.CHEST_STERNAL,
+    secondary=((MuscleGroup.TRICEPS_LATERAL, 0.5), (MuscleGroup.FRONT_DELT, 0.5)),
+    pattern=MovementPattern.HORIZONTAL_PUSH, tier=Tier.T2,
+    equipment=(Equipment.DUMBBELL, Equipment.ADJUSTABLE_BENCH),
+    tags=("flat_chest", "press"),
+)
+
 
 # ─── MASTER LIST ─────────────────────────────────────────────────────────────
 
@@ -758,6 +823,9 @@ ALL_EXERCISES: list[ExerciseDefinition] = [
     # Additional
     AB_CURL_MACHINE, ADDUCTOR_MACHINE, ABDUCTOR_MACHINE,
     FOREARM_WRIST_CURL,
+    # Extra equipment
+    PULL_UP, CHIN_UP, TRAP_BAR_DEADLIFT, KETTLEBELL_SWING, GOBLET_SQUAT,
+    DIP, BAND_LATERAL_RAISE, BAND_PULL_APART, DB_BENCH_ADJUSTABLE,
 ]
 
 
