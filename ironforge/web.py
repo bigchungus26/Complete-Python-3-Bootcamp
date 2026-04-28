@@ -16,10 +16,11 @@ from flask import (
 from markupsafe import escape
 
 from ironforge.data.muscle_groups import (
-    Goal, Sex, CaloricPhase, EquipmentAccess, Equipment,
+    Sex, CaloricPhase, EquipmentAccess, Equipment,
     VolumeMuscle,
 )
 from ironforge.intake.profile import UserProfile
+from ironforge.intake.questions import INJURY_KEYS
 from ironforge.engine.frequency import get_split_options, ALL_SPLITS
 from ironforge.program.builder import build_program
 from ironforge.program.models import Program
@@ -134,24 +135,15 @@ def _get_program() -> Program | None:
 # ─── Input Validation ─────────────────────────────────────────────────────────
 
 # Whitelists for validated inputs
-VALID_GOALS = {"a", "b", "c", "d"}
 VALID_CALORIC = {"surplus", "deficit", "maintenance"}
 VALID_TRAINING = {"a", "b", "c"}
-VALID_PROGRESSION = {"a", "b", "c"}
 VALID_DAYS = {3, 4, 5, 6}
 VALID_MINUTES = {40, 52, 67, 82, 95}
 VALID_SUPERSETS = {"yes", "no", "no_pref"}
-VALID_EQUIP = {"a", "b", "c", "d"}
+VALID_EQUIP = {"a", "b", "c"}
 VALID_SEX = {"male", "female"}
 VALID_MUSCLES = {m.name for m in VolumeMuscle}
-
-MAX_TEXT_LEN = 500
-
-
-def _clean_text(value: str, max_len: int = MAX_TEXT_LEN) -> str:
-    """Truncate and strip text input."""
-    return value.strip()[:max_len]
-
+VALID_EQUIPMENT_NAMES = {e.name for e in Equipment}
 
 def _safe_int(value: str, default: int, lo: int, hi: int) -> int:
     """Parse int with bounds, return default on failure."""
@@ -163,17 +155,9 @@ def _safe_int(value: str, default: int, lo: int, hi: int) -> int:
 
 
 def _parse_profile(form) -> UserProfile:
-    """Parse and validate form data into a UserProfile."""
+    """Parse and validate form data into a UserProfile.
+    Goal is fixed to hypertrophy (UserProfile default)."""
     profile = UserProfile()
-
-    # Goals — whitelist
-    goal_key = form.get("primary_goal", "a")
-    if goal_key not in VALID_GOALS:
-        goal_key = "a"
-    profile.primary_goal = {
-        "a": Goal.HYPERTROPHY, "b": Goal.STRENGTH,
-        "c": Goal.HYBRID, "d": Goal.RECOMP,
-    }[goal_key]
 
     # Priority muscles — whitelist against enum names
     for val in form.getlist("priority_muscles"):
@@ -198,14 +182,6 @@ def _parse_profile(form) -> UserProfile:
     if training not in VALID_TRAINING:
         training = "b"
     profile.training_months = {"a": 3, "b": 18, "c": 48}[training]
-
-    progression = form.get("progression_rate", "b")
-    if progression not in VALID_PROGRESSION:
-        progression = "b"
-    if progression == "a":
-        profile.can_add_weight_every_session = True
-    elif progression == "b":
-        profile.adds_weight_every_1_2_weeks = True
 
     # Schedule — bounded ints + whitelist
     days = _safe_int(form.get("days_per_week", "4"), 4, 3, 6)
@@ -237,19 +213,19 @@ def _parse_profile(form) -> UserProfile:
         "a": EquipmentAccess.FULL_GYM,
         "b": EquipmentAccess.LIMITED_GYM,
         "c": EquipmentAccess.HOME_GYM,
-        "d": EquipmentAccess.OTHER,
     }[equip]
-    if profile.equipment_access == EquipmentAccess.HOME_GYM:
-        profile.available_equipment = {
-            Equipment.BARBELL, Equipment.DUMBBELL,
-            Equipment.EZ_BAR, Equipment.BODYWEIGHT,
-        }
-    elif profile.equipment_access == EquipmentAccess.LIMITED_GYM:
-        profile.available_equipment = {
-            Equipment.BARBELL, Equipment.DUMBBELL,
-            Equipment.CABLE, Equipment.EZ_BAR,
-            Equipment.BODYWEIGHT, Equipment.MACHINE,
-        }
+    if profile.equipment_access == EquipmentAccess.FULL_GYM:
+        # Full gym keeps the dataclass default (everything).
+        pass
+    else:
+        # Limited / home gym → user picks exactly what they have.
+        picked: set[Equipment] = set()
+        for val in form.getlist("available_equipment"):
+            if val in VALID_EQUIPMENT_NAMES:
+                picked.add(Equipment[val])
+        if not picked:
+            picked = {Equipment.BODYWEIGHT}
+        profile.available_equipment = picked
 
     # Individual — whitelist + bounded text
     sex = form.get("sex", "male")
@@ -257,16 +233,9 @@ def _parse_profile(form) -> UserProfile:
         sex = "male"
     profile.sex = {"male": Sex.MALE, "female": Sex.FEMALE}[sex]
 
-    injuries = _clean_text(form.get("injuries", ""))
-    if injuries and injuries.lower() not in ("none", "no", "n/a", ""):
-        profile.injuries = [injuries]
-
-    profile.current_sets_per_muscle = _safe_int(
-        form.get("current_sets", "0"), 0, 0, 50
-    )
-    profile.current_program = _clean_text(
-        form.get("current_program", "starting fresh")
-    )
+    profile.injuries = [
+        val for val in form.getlist("injuries") if val in INJURY_KEYS
+    ]
 
     return profile
 

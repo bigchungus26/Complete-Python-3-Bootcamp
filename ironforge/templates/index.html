@@ -215,32 +215,6 @@
       <div class="section-title">Goals</div>
 
       <div class="question">
-        <label class="q-label">What is your primary training goal?</label>
-        <div class="options">
-          <label class="option-btn">
-            <input type="radio" name="primary_goal" value="a" checked>
-            <span class="radio-dot"></span>
-            Maximum muscle growth (hypertrophy)
-          </label>
-          <label class="option-btn">
-            <input type="radio" name="primary_goal" value="b">
-            <span class="radio-dot"></span>
-            Maximum strength (1RM progression)
-          </label>
-          <label class="option-btn">
-            <input type="radio" name="primary_goal" value="c">
-            <span class="radio-dot"></span>
-            Both muscle and strength (hybrid)
-          </label>
-          <label class="option-btn">
-            <input type="radio" name="primary_goal" value="d">
-            <span class="radio-dot"></span>
-            Build muscle while losing fat (recomp)
-          </label>
-        </div>
-      </div>
-
-      <div class="question">
         <label class="q-label">Priority muscle groups to bring up?</label>
         <div class="hint">Select all that apply (or none)</div>
         <div class="checkbox-grid">
@@ -328,24 +302,6 @@
           <label class="option-btn">
             <input type="radio" name="training_months" value="c">
             <span class="radio-dot"></span>3+ years
-          </label>
-        </div>
-      </div>
-
-      <div class="question">
-        <label class="q-label">Can you add weight to compounds every session?</label>
-        <div class="options">
-          <label class="option-btn">
-            <input type="radio" name="progression_rate" value="a">
-            <span class="radio-dot"></span>Yes — every session with good form
-          </label>
-          <label class="option-btn">
-            <input type="radio" name="progression_rate" value="b" checked>
-            <span class="radio-dot"></span>No, but every 1–2 weeks
-          </label>
-          <label class="option-btn">
-            <input type="radio" name="progression_rate" value="c">
-            <span class="radio-dot"></span>No — weight goes up over weeks to months
           </label>
         </div>
       </div>
@@ -459,16 +415,51 @@
         <label class="q-label">What do you have access to?</label>
         <div class="options">
           <label class="option-btn">
-            <input type="radio" name="equipment_access" value="a" checked>
+            <input type="radio" name="equipment_access" value="a" checked onchange="toggleEquipmentList()">
             <span class="radio-dot"></span>Full commercial gym
           </label>
           <label class="option-btn">
-            <input type="radio" name="equipment_access" value="b">
+            <input type="radio" name="equipment_access" value="b" onchange="toggleEquipmentList()">
             <span class="radio-dot"></span>Gym with limited machines/cables
           </label>
           <label class="option-btn">
-            <input type="radio" name="equipment_access" value="c">
-            <span class="radio-dot"></span>Home gym (dumbbells + barbell)
+            <input type="radio" name="equipment_access" value="c" onchange="toggleEquipmentList()">
+            <span class="radio-dot"></span>Home gym
+          </label>
+        </div>
+      </div>
+
+      <div class="question" id="equipment-list" style="display:none">
+        <label class="q-label">Pick everything you actually have access to:</label>
+        <div class="hint">Only selected items will be used to build your program</div>
+        <div class="checkbox-grid">
+          <label class="check-btn">
+            <input type="checkbox" name="available_equipment" value="BARBELL">
+            <span class="check-box"></span>Barbell
+          </label>
+          <label class="check-btn">
+            <input type="checkbox" name="available_equipment" value="DUMBBELL">
+            <span class="check-box"></span>Dumbbells
+          </label>
+          <label class="check-btn">
+            <input type="checkbox" name="available_equipment" value="EZ_BAR">
+            <span class="check-box"></span>EZ Bar
+          </label>
+          <label class="check-btn">
+            <input type="checkbox" name="available_equipment" value="CABLE">
+            <span class="check-box"></span>Cables
+          </label>
+          <label class="check-btn">
+            <input type="checkbox" name="available_equipment" value="MACHINE">
+            <span class="check-box"></span>Machines
+          </label>
+          <label class="check-btn">
+            <input type="checkbox" name="available_equipment" value="SMITH_MACHINE">
+            <span class="check-box"></span>Smith Machine
+          </label>
+          <label class="check-btn">
+            <input type="checkbox" name="available_equipment" value="BODYWEIGHT">
+            <span class="check-box"></span>Bodyweight
           </label>
         </div>
       </div>
@@ -500,18 +491,33 @@
 
       <div class="question">
         <label class="q-label">Injuries or movement limitations?</label>
-        <input type="text" name="injuries" placeholder="none">
-      </div>
-
-      <div class="question">
-        <label class="q-label">Current hard sets per muscle per week?</label>
-        <div class="hint">Rough estimate — e.g. 10, 15, or 0 if new</div>
-        <input type="number" name="current_sets" value="0" min="0" max="40">
-      </div>
-
-      <div class="question">
-        <label class="q-label">Current program?</label>
-        <textarea name="current_program" placeholder="starting fresh" rows="2"></textarea>
+        <div class="hint">Select all that apply — these will exclude conflicting exercises</div>
+        <div class="checkbox-grid">
+          <label class="check-btn">
+            <input type="checkbox" name="injuries" value="lower_back">
+            <span class="check-box"></span>Lower back
+          </label>
+          <label class="check-btn">
+            <input type="checkbox" name="injuries" value="knee">
+            <span class="check-box"></span>Knee
+          </label>
+          <label class="check-btn">
+            <input type="checkbox" name="injuries" value="shoulder">
+            <span class="check-box"></span>Shoulder
+          </label>
+          <label class="check-btn">
+            <input type="checkbox" name="injuries" value="elbow">
+            <span class="check-box"></span>Elbow
+          </label>
+          <label class="check-btn">
+            <input type="checkbox" name="injuries" value="wrist">
+            <span class="check-box"></span>Wrist
+          </label>
+          <label class="check-btn">
+            <input type="checkbox" name="injuries" value="hip">
+            <span class="check-box"></span>Hip
+          </label>
+        </div>
       </div>
 
       <div class="btn-row">
@@ -579,12 +585,21 @@ function loadSplitOptions() {
     });
 }
 
+function toggleEquipmentList() {
+  const checked = document.querySelector('input[name="equipment_access"]:checked');
+  const value = checked ? checked.value : 'a';
+  const list = document.getElementById('equipment-list');
+  // Show the equipment multi-select for limited gym (b) and home gym (c) only.
+  list.style.display = (value === 'a') ? 'none' : 'block';
+}
+
 document.getElementById('intake').addEventListener('submit', function() {
   document.getElementById('loading').classList.add('active');
 });
 
 // Preload splits on page load
 loadSplitOptions();
+toggleEquipmentList();
 </script>
 
 </body>

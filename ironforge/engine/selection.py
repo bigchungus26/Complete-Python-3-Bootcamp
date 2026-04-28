@@ -64,6 +64,55 @@ MIN_SETS_PER_EXERCISE = 2
 MAX_SETS_PER_EXERCISE = 3
 
 
+# ─── Injury → excluded exercise names ─────────────────────────────────────────
+# Matched against ExerciseDefinition.name. Keys come from intake.questions.
+INJURY_EXCLUSIONS: dict[str, set[str]] = {
+    "lower_back": {
+        "Barbell Squat", "Squat Rack",
+        "RDL", "SLDL", "Rounded Back Hyperextension",
+        "Barbell Row", "T-Bar Row", "Smith Machine Barbell Row",
+        "Back Extension / Hyperextension",
+    },
+    "knee": {
+        "Barbell Squat", "Smith Machine Squat", "Squat Rack",
+        "Hack Squat", "Hack Squat Machine", "Pendulum Squat",
+        "Bulgarian Split Squat", "Smith Machine Bulgarian Split Squat",
+        "Bulgarian Split Squat (Glute Focus)",
+        "Step Up", "Reverse Lunge",
+    },
+    "shoulder": {
+        "Shoulder Press", "Shoulder Press Machine",
+        "Incline Bench", "Flat Bench",
+        "Incline Smith Bench Press", "Smith Guided Chest Press",
+        "Barbell Row",
+    },
+    "elbow": {
+        "EZ Bar Skull Crusher", "EZ Bar JM Press", "Smith JM Press",
+        "Overhead EZ Bar Tricep Extension",
+        "EZ Bar Preacher Curl", "EZ Bar Cable Curl",
+    },
+    "wrist": {
+        "Barbell Squat", "Squat Rack",
+        "Flat Bench", "Incline Bench",
+        "Barbell Row",
+        "RDL", "SLDL",
+    },
+    "hip": {
+        "RDL", "SLDL",
+        "Hip Thrust", "Smith Machine Hip Thrust",
+        "Bulgarian Split Squat", "Bulgarian Split Squat (Glute Focus)",
+    },
+}
+
+
+def _injury_excluded_names(profile: UserProfile) -> set[str]:
+    """Build the set of exercise names blocked by the user's selected injuries."""
+    blocked: set[str] = set()
+    for key in profile.injuries:
+        blocked |= INJURY_EXCLUSIONS.get(key, set())
+    return blocked
+
+
 def _pick(options: list[ExerciseDefinition], equip: set[Equipment],
           exclude: set[str] | None = None) -> ExerciseDefinition | None:
     exclude = exclude or set()
@@ -91,7 +140,8 @@ def select_exercises_for_session(
     """Select exercises for a single session. Every exercise gets 2 or 3 sets."""
     equip = profile.available_equipment
     exercises: list[ProgrammedExercise] = []
-    used_names: set[str] = set()
+    # Prefill used_names with injury-blocked exercises so _pick skips them.
+    used_names: set[str] = _injury_excluded_names(profile)
     overall = profile.overall_level
 
     def _add(ex: ExerciseDefinition | None, sets: int = 2,

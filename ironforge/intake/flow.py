@@ -1,25 +1,57 @@
 """Conversational intake engine — walks through questions, builds UserProfile."""
 
 from ironforge.data.muscle_groups import (
-    Goal, Sex, CaloricPhase, EquipmentAccess, Equipment,
-    MovementPattern, TrainingLevel, VolumeMuscle,
+    Sex, CaloricPhase, EquipmentAccess, Equipment,
+    VolumeMuscle,
 )
 from ironforge.intake.profile import UserProfile
 from ironforge.intake.questions import ALL_BLOCKS
 
 
-def _ask(prompt: str, options: list[str] | None = None) -> str:
+# Equipment multi-select options for limited / home gym.
+EQUIPMENT_OPTIONS: list[tuple[str, Equipment, str]] = [
+    ("a", Equipment.BARBELL, "Barbell"),
+    ("b", Equipment.DUMBBELL, "Dumbbells"),
+    ("c", Equipment.EZ_BAR, "EZ Bar"),
+    ("d", Equipment.CABLE, "Cables"),
+    ("e", Equipment.MACHINE, "Machines"),
+    ("f", Equipment.SMITH_MACHINE, "Smith Machine"),
+    ("g", Equipment.BODYWEIGHT, "Bodyweight"),
+]
+
+# Injury option-letter → key (matches questions.INJURY_OPTIONS order).
+INJURY_LETTER_MAP: dict[str, str] = {
+    "a": "lower_back",
+    "b": "knee",
+    "c": "shoulder",
+    "d": "elbow",
+    "e": "wrist",
+    "f": "hip",
+}
+
+
+def _ask(prompt: str, options: list[str] | None = None,
+         multi_select: bool = False) -> str:
     """Ask a question and validate input."""
     print()
     print(prompt)
     while True:
         answer = input("\n> ").strip().lower()
         if not answer:
+            if multi_select:
+                return ""
             print("Please enter a response.")
             continue
-        if options and answer not in options:
+        if options and not multi_select and answer not in options:
             print(f"Please enter one of: {', '.join(options)}")
             continue
+        if options and multi_select:
+            picks = [p.strip() for p in answer.split(",") if p.strip()]
+            invalid = [p for p in picks if p not in options]
+            if invalid:
+                print(f"Invalid: {', '.join(invalid)}. Choose from: {', '.join(options)}")
+                continue
+            return ",".join(picks)
         return answer
 
 
@@ -52,12 +84,27 @@ def _parse_priority_muscles(text: str) -> list[VolumeMuscle]:
         if keyword in text and muscle not in found:
             found.append(muscle)
 
-    # If "arms" mentioned, add both biceps and triceps
     if "arm" in text:
         if VolumeMuscle.TRICEPS not in found:
             found.append(VolumeMuscle.TRICEPS)
 
     return found
+
+
+def _ask_equipment_multiselect() -> set[Equipment]:
+    """Prompt the user to pick the equipment they have available."""
+    letters = [opt[0] for opt in EQUIPMENT_OPTIONS]
+    label_lines = "\n".join(f"  ({l}) {label}" for l, _, label in EQUIPMENT_OPTIONS)
+    prompt = (
+        "Which equipment do you actually have? Pick all that apply (comma-separated).\n"
+        f"{label_lines}"
+    )
+    answer = _ask(prompt, options=letters, multi_select=True)
+    if not answer:
+        return {Equipment.BODYWEIGHT}
+    picks = {p.strip() for p in answer.split(",") if p.strip()}
+    selected = {eq for letter, eq, _ in EQUIPMENT_OPTIONS if letter in picks}
+    return selected or {Equipment.BODYWEIGHT}
 
 
 def run_intake() -> UserProfile:
@@ -76,16 +123,9 @@ def run_intake() -> UserProfile:
         print(f"{'─' * 40}")
 
         for q in questions:
-            answer = _ask(q.prompt, q.options)
+            answer = _ask(q.prompt, q.options, q.multi_select)
 
-            # ── Parse answers into profile ──
-            if q.key == "primary_goal":
-                profile.primary_goal = {
-                    "a": Goal.HYPERTROPHY, "b": Goal.STRENGTH,
-                    "c": Goal.HYBRID, "d": Goal.RECOMP,
-                }[answer]
-
-            elif q.key == "priority_muscles":
+            if q.key == "priority_muscles":
                 profile.priority_muscles = _parse_priority_muscles(answer)
                 if VolumeMuscle.GLUTES in profile.priority_muscles:
                     profile.wants_glute_focus = True
@@ -98,12 +138,6 @@ def run_intake() -> UserProfile:
 
             elif q.key == "training_months":
                 profile.training_months = {"a": 3, "b": 18, "c": 48}[answer]
-
-            elif q.key == "progression_rate":
-                if answer == "a":
-                    profile.can_add_weight_every_session = True
-                elif answer == "b":
-                    profile.adds_weight_every_1_2_weeks = True
 
             elif q.key == "days_per_week":
                 profile.days_per_week = {"a": 3, "b": 4, "c": 5, "d": 6}[answer]
@@ -121,37 +155,22 @@ def run_intake() -> UserProfile:
                     "a": EquipmentAccess.FULL_GYM,
                     "b": EquipmentAccess.LIMITED_GYM,
                     "c": EquipmentAccess.HOME_GYM,
-                    "d": EquipmentAccess.OTHER,
                 }[answer]
-                # Set available equipment based on access
-                if profile.equipment_access == EquipmentAccess.HOME_GYM:
-                    profile.available_equipment = {
-                        Equipment.BARBELL, Equipment.DUMBBELL,
-                        Equipment.EZ_BAR, Equipment.BODYWEIGHT,
-                    }
-                elif profile.equipment_access == EquipmentAccess.LIMITED_GYM:
-                    profile.available_equipment = {
-                        Equipment.BARBELL, Equipment.DUMBBELL,
-                        Equipment.CABLE, Equipment.EZ_BAR,
-                        Equipment.BODYWEIGHT, Equipment.MACHINE,
-                    }
-                # Full gym keeps the default (everything)
+                if profile.equipment_access != EquipmentAccess.FULL_GYM:
+                    profile.available_equipment = _ask_equipment_multiselect()
+                # Full gym keeps the dataclass default (everything).
 
             elif q.key == "sex":
                 profile.sex = {"a": Sex.MALE, "b": Sex.FEMALE}[answer]
 
             elif q.key == "injuries":
-                if answer.lower() not in ("none", "no", "n/a"):
-                    profile.injuries = [answer]
-
-            elif q.key == "current_sets":
-                try:
-                    profile.current_sets_per_muscle = int(answer)
-                except ValueError:
-                    profile.current_sets_per_muscle = 0
-
-            elif q.key == "current_program":
-                profile.current_program = answer
+                if not answer:
+                    profile.injuries = []
+                else:
+                    picks = [p.strip() for p in answer.split(",") if p.strip()]
+                    profile.injuries = [
+                        INJURY_LETTER_MAP[p] for p in picks if p in INJURY_LETTER_MAP
+                    ]
 
     print(f"\n{'─' * 40}")
     print("  Intake complete! Generating your program...")

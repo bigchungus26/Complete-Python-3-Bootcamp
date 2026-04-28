@@ -9,20 +9,24 @@ class Question:
     prompt: str
     options: list[str] | None = None
     allow_free_text: bool = False
+    multi_select: bool = False
+
+
+# Injury options shared between web form and CLI.
+# Each key maps to an exclusion set in engine.selection.INJURY_EXCLUSIONS.
+INJURY_OPTIONS: list[tuple[str, str]] = [
+    ("lower_back", "Lower back"),
+    ("knee", "Knee"),
+    ("shoulder", "Shoulder"),
+    ("elbow", "Elbow"),
+    ("wrist", "Wrist"),
+    ("hip", "Hip"),
+]
+
+INJURY_KEYS: set[str] = {k for k, _ in INJURY_OPTIONS}
 
 
 BLOCK_A = [
-    Question(
-        key="primary_goal",
-        prompt=(
-            "What is your primary training goal?\n"
-            "  (a) Maximum muscle growth (hypertrophy)\n"
-            "  (b) Maximum strength (1RM progression)\n"
-            "  (c) Both muscle and strength (hybrid)\n"
-            "  (d) Maintain/build muscle while losing fat (body recomposition)"
-        ),
-        options=["a", "b", "c", "d"],
-    ),
     Question(
         key="priority_muscles",
         prompt=(
@@ -51,16 +55,6 @@ BLOCK_B = [
             "  (a) Less than 6 months\n"
             "  (b) 6 months - 3 years\n"
             "  (c) 3+ years"
-        ),
-        options=["a", "b", "c"],
-    ),
-    Question(
-        key="progression_rate",
-        prompt=(
-            "Can you currently add weight to your main compound lifts every single session?\n"
-            "  (a) Yes — I add weight every session with good form\n"
-            "  (b) No, but I add weight every 1-2 weeks\n"
-            "  (c) No, weight goes up over weeks to months"
         ),
         options=["a", "b", "c"],
     ),
@@ -109,11 +103,12 @@ BLOCK_D = [
             "What equipment do you have access to?\n"
             "  (a) Full commercial gym (barbells, cables, machines, dumbbells)\n"
             "  (b) Gym with limited machines/cables\n"
-            "  (c) Home gym with dumbbells and barbell only\n"
-            "  (d) Other — describe"
+            "  (c) Home gym"
         ),
-        options=["a", "b", "c", "d"],
+        options=["a", "b", "c"],
     ),
+    # If (b) or (c), the CLI/web will follow up with an equipment multi-select.
+    # See flow.py / web.py for handling.
 ]
 
 BLOCK_E = [
@@ -131,25 +126,16 @@ BLOCK_E = [
         key="injuries",
         prompt=(
             "Do you have any injuries, pain, or movement limitations?\n"
-            "(Describe, or say 'none')"
+            "Pick all that apply (comma-separated letters), or leave blank for none.\n"
+            "  (a) Lower back\n"
+            "  (b) Knee\n"
+            "  (c) Shoulder\n"
+            "  (d) Elbow\n"
+            "  (e) Wrist\n"
+            "  (f) Hip"
         ),
-        allow_free_text=True,
-    ),
-    Question(
-        key="current_sets",
-        prompt=(
-            "Approximately how many hard sets per muscle group per week are you\n"
-            "currently doing? (Rough number, e.g., '10', '15', or '0' if new)"
-        ),
-        allow_free_text=True,
-    ),
-    Question(
-        key="current_program",
-        prompt=(
-            'What does your current program look like?\n'
-            '(Brief description, or "starting fresh")'
-        ),
-        allow_free_text=True,
+        options=["a", "b", "c", "d", "e", "f"],
+        multi_select=True,
     ),
 ]
 
